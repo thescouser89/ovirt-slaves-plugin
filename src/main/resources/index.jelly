@@ -1,0 +1,7 @@
+<!--
+   - This div will go into the description of the plugin in the plugins page in
+   - Jenkins
+   -->
+<div>
+  This plugin can be used to control ovirt-controlled slaves
+</div>
