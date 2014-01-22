@@ -42,5 +42,12 @@
     </pluginRepositories>
 
     <dependencies>
+        <dependency>
+            <groupId>org.ovirt.engine.sdk</groupId>
+            <artifactId>ovirt-engine-sdk-java</artifactId>
+            <version>3.4.0.1-1</version>
+            <type>jar</type>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 </project>
