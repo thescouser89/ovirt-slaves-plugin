@@ -100,7 +100,7 @@ public class OVirtHypervisor extends Cloud {
          * @return
          */
         public FormValidation doCheckName(@QueryParameter("name") final String name) {
-            return FormValidation.ok();
+            return FormValidation.error(name);
         }
 
         /**

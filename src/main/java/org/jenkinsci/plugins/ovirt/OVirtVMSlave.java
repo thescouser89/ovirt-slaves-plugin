@@ -1,15 +1,12 @@
 package org.jenkinsci.plugins.ovirt;
 
-import hudson.model.Slave;
+import hudson.model.*;
+import hudson.util.FormValidation;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import hudson.AbortException;
 import hudson.Extension;
 import hudson.Util;
-import hudson.model.TaskListener;
-import hudson.model.Computer;
-import hudson.model.Descriptor;
-import hudson.model.Hudson;
 import hudson.model.Slave;
 import hudson.slaves.Cloud;
 import hudson.slaves.ComputerListener;
@@ -18,6 +15,7 @@ import hudson.slaves.ComputerLauncher;
 import hudson.slaves.RetentionStrategy;
 import hudson.slaves.SlaveComputer;
 import hudson.util.ListBoxModel;
+import org.kohsuke.stapler.QueryParameter;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -78,6 +76,10 @@ public class OVirtVMSlave extends Slave {
         @Override
         public boolean isInstantiable() {
             return true;
+        }
+
+        public FormValidation doCheckWaitSec(@QueryParameter("waitSec") final String waitSec) {
+            return FormValidation.ok(waitSec);
         }
     }
 }
