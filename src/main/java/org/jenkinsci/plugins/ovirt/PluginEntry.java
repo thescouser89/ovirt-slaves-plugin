@@ -1,7 +1,11 @@
 package org.jenkinsci.plugins.ovirt;
 
 import hudson.Plugin;
+import hudson.util.ListBoxModel;
+import org.kohsuke.stapler.QueryParameter;
 
+import javax.servlet.ServletException;
+import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -23,5 +27,18 @@ public class PluginEntry extends Plugin {
     @Override
     public void stop() throws Exception {
         LOGGER.log(Level.FINE, "Stopping ovirt-slave plugin");
+    }
+
+
+    public ListBoxModel doTestValues(@QueryParameter("value") String value) throws IOException, ServletException {
+        ListBoxModel m = new ListBoxModel();
+
+        for(int i = 0; i < 5; i++) {
+            m.add((String) value + i, (String) value + i);
+        }
+
+        // make the third option selected initially
+        m.get(3).selected = true;
+        return m;
     }
 }

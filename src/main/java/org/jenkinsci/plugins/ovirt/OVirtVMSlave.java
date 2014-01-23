@@ -17,8 +17,8 @@ import hudson.slaves.SlaveComputer;
 import hudson.util.ListBoxModel;
 import org.kohsuke.stapler.QueryParameter;
 
+import javax.servlet.ServletException;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -34,7 +34,7 @@ public class OVirtVMSlave extends Slave {
                         String labelString, ComputerLauncher launcher, RetentionStrategy retentionStrategy,
                         List<? extends NodeProperty<?>> nodeProperties)
                 throws Descriptor.FormException, IOException {
-        super(name, nodeDescription, remoteFS, numExecutors, mode, labelString, launcher, retentionStrategy,
+        super(name, nodeDescription, remoteFS, numExecutors, mode, labelString, new OVirtVMLauncher(launcher, "ho", "hi", "ho", 45), retentionStrategy,
               nodeProperties);
 
     }
@@ -78,8 +78,59 @@ public class OVirtVMSlave extends Slave {
             return true;
         }
 
-        public FormValidation doCheckWaitSec(@QueryParameter("waitSec") final String waitSec) {
-            return FormValidation.ok(waitSec);
+        public FormValidation doCheckWaitSec(@QueryParameter("waitSec") String value) {
+         	try {
+                int v = Integer.parseInt(value);
+
+                FormValidation result;
+
+                if (v < 0) {
+                     result = FormValidation.error("Negative value..");
+                } else if (v == 0) {
+                    result = FormValidation.warning("You declared this virtual machine to be ready right away. " +
+                                                    "It probably needs a couple of seconds before it is " +
+                                                    "ready to process jobs!");
+                } else {
+                    result = FormValidation.ok();
+                }
+
+                return result;
+
+            } catch (NumberFormatException e) {
+                return FormValidation.error("Not a number..");
+            }
         }
+
+        public ListBoxModel doFillHypervisorDescriptionItems() {
+            ListBoxModel m = new ListBoxModel();
+
+            m.add("hihi", "hihi");
+            m.add("hoho", "hoho");
+            return m;
+        }
+
+        public ListBoxModel doGetVMNames(@QueryParameter("vm") String value) throws IOException, ServletException {
+            ListBoxModel m = new ListBoxModel();
+            for(int i = 0; i < 5; i++) {
+                m.add((String) value + i, (String) value + i);
+            }
+
+            // make the third option selected initially
+            m.get(3).selected = true;
+            return m;
+        }
+
+        public ListBoxModel doGetSnapshotNames(@QueryParameter("vm") String vm,
+                                               @QueryParameter("hypervisor") String hypervisor) throws IOException, ServletException {
+            ListBoxModel m = new ListBoxModel();
+            for(int i = 0; i < 5; i++) {
+                m.add((String) vm + hypervisor + i, (String) vm + hypervisor + i);
+            }
+
+            // make the third option selected initially
+            m.get(3).selected = true;
+            return m;
+        }
+
     }
 }

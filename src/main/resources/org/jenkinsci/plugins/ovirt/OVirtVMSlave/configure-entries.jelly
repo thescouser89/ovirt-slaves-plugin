@@ -1,52 +1,46 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:sel="/lib/form">
 
+
     <!--
       - Show a list of ovirt hypervisors available
+      -
+      - The onchange function will update both the virtual machine and the snapshot name values in the dropdown
+      - menu
+      -
+      - The method doGetVMNames and doGetSnapshotNames from OVirtVMSlave will be called
+      - The initial value of hypervisor is obtained via doFillHypervisorDescriptionItems function in OVirtVMSlave
       -->
-      <!--
     <f:entry field="hypervisorDescription" title="${%Hypervisor}">
-	   <f:select onchange="updateListBox(document.getElementsByName('virtualMachineName')[0],
-	                                     '${rootURL}/plugin/libvirt-slave/computerNameValues?value='+encode(this.value))"/>
+	   <f:select id='hypervisor'
+	             onchange="updateListBox(
+	                          'virtualMachineName',
+	                          '${descriptor.getDescriptorFullUrl()}/getVMNames?vm=' + encode(this.value));
+                           updateListBox(
+                              'snapshotName',
+                              '${descriptor.getDescriptorFullUrl()}/getSnapshotNames?vm=' + encode(this.value) + '&amp;hypervisor=' + encode(document.getElementsByName('_.hypervisorDescription')[0].options[document.getElementsByName('_.hypervisorDescription')[0].selectedIndex].text))" />
 	</f:entry>
-        -->
+
     <!--
       -  Show a list of virtual machines available for the hypervisor selected
+      -
+      - On change, the doGetSnapshotNames function from OVirtVMSlave will be called
       -->
-      <!--
     <f:entry title="${%Virtual Machine}" field="virtualMachineName">
-        <select class="setting-input"
-                name="virtualMachineName"
-                value="${instance.virtualMachineName}"
-                onchange="updateListBox(document.getElementsByName('snapshotName')[0],
-                                        '${rootURL}/plugin/libvirt-slave/snapshotNameValues?vm='+encode(this.value)+'&amp;hypervisor='+encode(document.getElementsByName('_.hypervisorDescription')[0].options[document.getElementsByName('_.hypervisorDescription')[0].selectedIndex].text))">
-            <j:forEach var="vc"
-                       items="${descriptor.getDefinedVirtualMachines(it.hypervisorDescription)}"
-                       varStatus="loop">
-                <option selected="${vc.name == it.virtualMachineName ? 'true' : null}">
-                    ${vc.name}
-                </option>
-            </j:forEach>
+        <select id="virtualMachineName"
+                onchange="updateListBox(
+                              'snapshotName',
+                              '${descriptor.getDescriptorFullUrl()}/getSnapshotNames?vm=' + encode(this.value) + '&amp;hypervisor=' + encode(document.getElementsByName('_.hypervisorDescription')[0].options[document.getElementsByName('_.hypervisorDescription')[0].selectedIndex].text))">
         </select>
     </f:entry>
-        -->
+
     <!--
       - Show a list of snapshots available for the vm to reset to upon launch
       -->
-      <!--
-	<f:entry title="${%Revert Snapshot upon launch}" field="snapshotName">
-        <select class="setting-input" name="snapshotName" value="${instance.snapshotName}">
-        	<option selected="${it.snapshotName == null || it.snapshotName == ''}"></option>
-            <j:forEach var="snapshot"
-                       items="${descriptor.getDefinedSnapshots(it.hypervisorDescription, it.virtualMachineName)}"
-                       varStatus="loop">
-                <option selected="${snapshot == it.snapshotName ? 'true' : null}">
-                    ${snapshot}
-                </option>
-            </j:forEach>
-        </select>
+    <f:entry title="${%Snapshot name}" field="snapshotName">
+        <select id="snapshotName" />
     </f:entry>
-        -->
+
     <f:entry title="${%Description}" help="/help/system-config/master-slave/description.html">
         <f:textbox field="nodeDescription"/>
     </f:entry>
