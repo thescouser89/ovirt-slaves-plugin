@@ -4,6 +4,10 @@ import hudson.slaves.Cloud;
 
 import hudson.model.Label;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Collection;
 
 import hudson.Extension;
@@ -14,14 +18,20 @@ import hudson.slaves.Cloud;
 import hudson.slaves.NodeProvisioner.PlannedNode;
 import hudson.util.FormValidation;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.commons.fileupload.FileItem;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.ovirt.engine.sdk.Api;
+
+import javax.servlet.ServletException;
 
 /**
  * OVirtHypervisor is used to provide a different communication model for
@@ -51,9 +61,10 @@ public class OVirtHypervisor extends Cloud {
         this.ovirtURL = ovirtURL;
         this.username = username;
         this.password = password;
+        System.out.println(new Date());
     }
 
-    public String getURL() {
+    public String getovirtURL() {
         return ovirtURL;
     }
 
@@ -95,12 +106,21 @@ public class OVirtHypervisor extends Cloud {
         }
 
         /**
-         * TODO: work on this
-         * @param name
-         * @return
+         * Validation for the cloud given name. The name must only have symbols dot (.) or underscore (_),
+         * letters, and numbers.
+         *
+         * @param name the cloud name to verify
+         * @return FormValidation object
          */
         public FormValidation doCheckName(@QueryParameter("name") final String name) {
-            return FormValidation.error(name);
+
+            String regex = "[._a-z0-9]+";
+            Matcher m = Pattern.compile(regex, Pattern.CASE_INSENSITIVE).matcher(name);
+            if(m.matches()) {
+                return FormValidation.ok();
+            }
+            return FormValidation.error("Cloud name allows only: " + regex);
+
         }
 
         /**
@@ -119,8 +139,68 @@ public class OVirtHypervisor extends Cloud {
         public FormValidation doTestConnection(@QueryParameter("ovirtURL") final String ovirtURL,
                                                @QueryParameter("username") final String username,
                                                @QueryParameter("password") final String password) {
-//            return FormValidation.error("Boo!");
-            return FormValidation.ok("Passed!");
+            try {
+                Api api = new Api(ovirtURL, username, password, "ovirt.trustore");
+                api.shutdown();
+                return FormValidation.ok("Test succeeded!");
+            } catch (Exception e) {
+                return FormValidation.error(e.getMessage());
+            }
+
+        }
+
+        /**
+         * This file will only render the startUpload.jelly file when the user is creating a new cloud
+         *
+         * Code from the secret plugin
+         *
+         * @See <a href='https://github.com/jenkinsci/secret-plugin/blob/master/src/main/java/hudson/plugins/secret/SecretBuildWrapper.java'>
+         *
+         * @param req
+         * @param rsp
+         * @throws IOException
+         * @throws ServletException
+         */
+        public void doStartUpload(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+            rsp.setContentType("text/html");
+            req.getView(OVirtHypervisor.class, "startUpload.jelly").forward(req, rsp);
+        }
+
+        /**
+         * This code will be called when the user presses the 'Upload' button while configuring a new cloud
+         *
+         * Code from the secret plugin
+         *
+         * @See <a href='https://github.com/jenkinsci/secret-plugin/blob/master/src/main/java/hudson/plugins/secret/SecretBuildWrapper.java'>
+         *
+         * @param req
+         * @param rsp
+         * @throws IOException
+         * @throws ServletException
+         */
+        public void doUpload(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+            FileItem file = req.getFileItem("trustore.file");
+
+            if (file == null) {
+                throw new ServletException("No file uploaded");
+            }
+
+            saveFile(file.get(), "ovirt.trustore");
+            confirmUpload(rsp);
+        }
+
+        private void confirmUpload(final StaplerResponse rsp) throws IOException {
+            rsp.setContentType("text/html");
+            rsp.getWriter().println("Uploaded trustore");
+        }
+
+        private void saveFile(final byte[] data, final String filename) throws IOException {
+            OutputStream os = new FileOutputStream(new File(filename));
+            try {
+                os.write(data);
+            } finally {
+                os.close();
+            }
         }
     }
 }

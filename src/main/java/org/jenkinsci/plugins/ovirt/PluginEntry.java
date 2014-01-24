@@ -28,17 +28,4 @@ public class PluginEntry extends Plugin {
     public void stop() throws Exception {
         LOGGER.log(Level.FINE, "Stopping ovirt-slave plugin");
     }
-
-
-    public ListBoxModel doTestValues(@QueryParameter("value") String value) throws IOException, ServletException {
-        ListBoxModel m = new ListBoxModel();
-
-        for(int i = 0; i < 5; i++) {
-            m.add((String) value + i, (String) value + i);
-        }
-
-        // make the third option selected initially
-        m.get(3).selected = true;
-        return m;
-    }
 }

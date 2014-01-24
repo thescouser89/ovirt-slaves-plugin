@@ -1,0 +1,6 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+    <form method="post" action="upload" enctype="multipart/form-data">
+        <input type="file" name="trustore.file" size="20"/>
+        <input type="submit" value="Upload"/>
+    </form>
+</j:jelly>
