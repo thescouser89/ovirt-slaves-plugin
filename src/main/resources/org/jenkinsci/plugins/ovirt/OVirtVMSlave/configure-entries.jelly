@@ -15,10 +15,7 @@
 	   <f:select id='hypervisor'
 	             onchange="updateListBox(
 	                          'virtualMachineName',
-	                          '${descriptor.getDescriptorFullUrl()}/getVMNames?vm=' + encode(this.value));
-                           updateListBox(
-                              'snapshotName',
-                              '${descriptor.getDescriptorFullUrl()}/getSnapshotNames?vm=' + encode(this.value) + '&amp;hypervisor=' + encode(document.getElementsByName('_.hypervisorDescription')[0].options[document.getElementsByName('_.hypervisorDescription')[0].selectedIndex].text))" />
+	                          '${descriptor.getDescriptorFullUrl()}/getVMNames?hypervisor=' + encode(this.value));"/>
 	</f:entry>
 
     <!--
@@ -31,6 +28,7 @@
                 onchange="updateListBox(
                               'snapshotName',
                               '${descriptor.getDescriptorFullUrl()}/getSnapshotNames?vm=' + encode(this.value) + '&amp;hypervisor=' + encode(document.getElementsByName('_.hypervisorDescription')[0].options[document.getElementsByName('_.hypervisorDescription')[0].selectedIndex].text))">
+            <option>Fetching vm information...</option>
         </select>
     </f:entry>
 

@@ -1,8 +1,9 @@
 package org.jenkinsci.plugins.ovirt;
 
+import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.model.Descriptor;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.slaves.Cloud;
 import hudson.slaves.ComputerLauncher;
 import hudson.slaves.SlaveComputer;
@@ -57,7 +58,22 @@ public class OVirtVMLauncher extends ComputerLauncher {
      */
     public void launch(SlaveComputer slaveComputer, TaskListener taskListener)
                                                         throws IOException, InterruptedException {
+        taskListener.getLogger().println("Hakuna Matata");
 
+    }
+
+    public OVirtHypervisor findHypervisor() throws RuntimeException {
+        if (hypervisorDescription != null && virtualMachineName != null) {
+            for (Cloud cloud: Jenkins.getInstance().clouds) {
+                if (cloud instanceof OVirtHypervisor) {
+                    OVirtHypervisor temp = (OVirtHypervisor) cloud;
+                    if (temp.getHypervisorDescription().equals(hypervisorDescription)) {
+                        return temp;
+                    }
+                }
+            }
+        }
+        throw new RuntimeException("Could not find our ovirt instance");
     }
 
     /**

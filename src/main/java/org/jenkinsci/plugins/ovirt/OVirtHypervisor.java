@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Collection;
 
 import hudson.Extension;
@@ -17,10 +18,8 @@ import hudson.model.Label;
 import hudson.slaves.Cloud;
 import hudson.slaves.NodeProvisioner.PlannedNode;
 import hudson.util.FormValidation;
-import java.util.Collection;
-import java.util.Date;
+
 import java.util.List;
-import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,6 +29,8 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.ovirt.engine.sdk.Api;
+import org.ovirt.engine.sdk.decorators.Cluster;
+import org.ovirt.engine.sdk.decorators.VM;
 
 import javax.servlet.ServletException;
 
@@ -42,9 +43,12 @@ import javax.servlet.ServletException;
  */
 public class OVirtHypervisor extends Cloud {
     private String ovirtURL;
+    private String clusterName;
     private String username;
     private String password;
 
+    private transient Api api;
+    private transient Cluster cluster;
     /**
      *
      * @param name Name of the OVirt Server
@@ -55,17 +59,26 @@ public class OVirtHypervisor extends Cloud {
     @DataBoundConstructor
     public OVirtHypervisor(final String name,
                            final String ovirtURL,
+                           final String clusterName,
                            final String username,
                            final String password) {
         super(name);
         this.ovirtURL = ovirtURL;
+        this.clusterName = clusterName;
         this.username = username;
         this.password = password;
-        System.out.println(new Date());
+    }
+
+    public String getHypervisorDescription() {
+        return this.name + " " + ovirtURL;
     }
 
     public String getovirtURL() {
         return ovirtURL;
+    }
+
+    public String getClusterName() {
+        return clusterName;
     }
 
     public String getUsername() {
@@ -86,6 +99,62 @@ public class OVirtHypervisor extends Cloud {
     @Override
     public boolean canProvision(Label label) {
         return false;
+    }
+
+    public List<String> getVMNames() {
+        List<String> vmNames = new ArrayList<String>();
+
+        for(VM vm: getVMsInCluster()) {
+            vmNames.add(vm.getName());
+        }
+        return vmNames;
+    }
+
+    public Api getAPI() {
+        try {
+            if(api == null) {
+                api = new Api(ovirtURL, username, password, "ovirt.trustore");
+            }
+            return api;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public VM getVM(String vm) {
+        for(VM vmi: getVMsInCluster()) {
+            if (vmi.getName().equals(vm)) {
+                return vmi;
+            }
+        }
+        return null;
+    }
+
+    public List<VM> getVMsInCluster() {
+        try {
+            List<VM> vms = getAPI().getVMs().list();
+            List<VM> vmsInCluster = new ArrayList<VM>();
+            // if clusterName specified, search for vms in that cluster
+            if (clusterName != null) {
+                for (VM vm: vms) {
+                    if (vm.getCluster().getHref().equals(getCluster(getAPI()).getHref())) {
+                        vmsInCluster.add(vm);
+                    }
+                }
+                return vmsInCluster;
+            } else {
+                return vms;
+            }
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public Cluster getCluster(Api api) throws Exception {
+        if (cluster == null && clusterName != null) {
+            cluster = api.getClusters().get(clusterName);
+        }
+        return cluster;
     }
 
     @Override
@@ -120,7 +189,6 @@ public class OVirtHypervisor extends Cloud {
                 return FormValidation.ok();
             }
             return FormValidation.error("Cloud name allows only: " + regex);
-
         }
 
         /**
@@ -140,8 +208,7 @@ public class OVirtHypervisor extends Cloud {
                                                @QueryParameter("username") final String username,
                                                @QueryParameter("password") final String password) {
             try {
-                Api api = new Api(ovirtURL, username, password, "ovirt.trustore");
-                api.shutdown();
+                new Api(ovirtURL, username, password, "ovirt.trustore").shutdown();
                 return FormValidation.ok("Test succeeded!");
             } catch (Exception e) {
                 return FormValidation.error(e.getMessage());
