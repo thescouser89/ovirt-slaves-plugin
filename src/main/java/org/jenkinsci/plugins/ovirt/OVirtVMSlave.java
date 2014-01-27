@@ -23,6 +23,7 @@ import org.ovirt.engine.sdk.decorators.VMSnapshot;
 import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -38,16 +39,17 @@ public class OVirtVMSlave extends Slave {
     private String hypervisorDescription;
     private String snapshotName;
     private String virtualMachineName;
+    private ComputerLauncher delegateLauncher;
     private int waitSec;
 
     @DataBoundConstructor
     public OVirtVMSlave(String name, String nodeDescription, String remoteFS, String numExecutors, Mode mode,
-                        String labelString, ComputerLauncher launcher, RetentionStrategy retentionStrategy,
+                        String labelString, ComputerLauncher delegateLauncher, RetentionStrategy retentionStrategy,
                         String hypervisorDescription, String snapshotName, int waitSec, String virtualMachineName,
                         List<? extends NodeProperty<?>> nodeProperties)
                 throws Descriptor.FormException, IOException {
         super(name, nodeDescription, remoteFS, numExecutors, mode, labelString,
-              new OVirtVMLauncher(launcher, hypervisorDescription, name, snapshotName, waitSec),
+              new OVirtVMLauncher(delegateLauncher, hypervisorDescription, virtualMachineName, snapshotName, waitSec),
               retentionStrategy,
               nodeProperties);
 
@@ -55,6 +57,7 @@ public class OVirtVMSlave extends Slave {
         this.snapshotName = snapshotName;
         this.virtualMachineName = virtualMachineName;
         this.waitSec = waitSec;
+        this.delegateLauncher = delegateLauncher;
     }
 
     public String getHypervisorDescription() {
@@ -73,6 +76,10 @@ public class OVirtVMSlave extends Slave {
         return waitSec;
     }
 
+    public ComputerLauncher getDelegateLauncher() {
+        return delegateLauncher;
+    }
+
 
     /**
      * Receives notifications about status changes of Computers.
@@ -88,10 +95,6 @@ public class OVirtVMSlave extends Slave {
             if (!(c.getNode() instanceof OVirtVMSlave)) {
                 return;
             }
-
-            SlaveComputer slave = (SlaveComputer) c;
-            OVirtVMLauncher launcher = (OVirtVMLauncher) slave.getLauncher();
-            OVirtHypervisor hypervisor = launcher.findHypervisor();
         }
     }
 
@@ -164,27 +167,60 @@ public class OVirtVMSlave extends Slave {
 
         public ListBoxModel doGetVMNames(@QueryParameter("hypervisor") String value) throws IOException, ServletException {
             ListBoxModel m = new ListBoxModel();
-            OVirtHypervisor hypervisor = getDescHypervisor().get(value);
-            for (String vmName: hypervisor.getVMNames()) {
+            List<String> vmNames = getVMNamesList(value);
+            for (String vmName: vmNames) {
                 m.add(vmName, vmName);
             }
             return m;
+        }
+
+        public List<String> getVMNamesList(String hypervisor) {
+            List<String> vmNames = new LinkedList<String>();
+
+            if (hypervisor == null) {
+                return vmNames;
+            }
+
+            OVirtHypervisor hype = getDescHypervisor().get(hypervisor);
+            for (String vmName: hype.getVMNames()) {
+                vmNames.add(vmName);
+            }
+
+            return vmNames;
         }
 
         public ListBoxModel doGetSnapshotNames(@QueryParameter("vm") String vm,
                                                @QueryParameter("hypervisor") String hypervisor) throws IOException, ServletException {
 
             ListBoxModel m = new ListBoxModel();
+
+            for (String snapshot: getSnapshotNamesList(vm, hypervisor)) {
+                m.add(snapshot, snapshot);
+            }
+            return m;
+        }
+
+        public List<String> getSnapshotNamesList(final String vm, final String hypervisor) {
+
+            List<String> snapshotNames = new LinkedList<String>();
+
+            // add an empty snapshot option
+            snapshotNames.add("");
+
+            if (vm == null || hypervisor == null) {
+                return snapshotNames;
+            }
+
             OVirtHypervisor hype = getDescHypervisor().get(hypervisor);
             VM vmi = hype.getVM(vm);
 
             try {
                 for (VMSnapshot snapshot: vmi.getSnapshots().list()) {
-                    m.add(snapshot.getDescription(), snapshot.getDescription());
+                    snapshotNames.add(snapshot.getDescription());
                 }
             } catch (Exception e) {}
 
-            return m;
+            return snapshotNames;
         }
 
     }
