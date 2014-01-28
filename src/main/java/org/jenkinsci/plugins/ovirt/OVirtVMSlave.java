@@ -2,19 +2,14 @@ package org.jenkinsci.plugins.ovirt;
 
 import hudson.model.*;
 import hudson.util.FormValidation;
-import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 
-import hudson.AbortException;
 import hudson.Extension;
-import hudson.Util;
 import hudson.model.Slave;
-import hudson.slaves.Cloud;
 import hudson.slaves.ComputerListener;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.ComputerLauncher;
 import hudson.slaves.RetentionStrategy;
-import hudson.slaves.SlaveComputer;
 import hudson.util.ListBoxModel;
 import org.kohsuke.stapler.QueryParameter;
 import org.ovirt.engine.sdk.decorators.VM;
@@ -22,34 +17,69 @@ import org.ovirt.engine.sdk.decorators.VMSnapshot;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.logging.Logger;
 
 /**
- * OVirtVMSlave is used to represent a node. It uses OVirtHypervisor (@see OVirtHypervisor) to get the current nodes
- * available in the ovirt server and uses OVirtComputerLauncher to *really* start the vm, and run slave.jar
+ * OVirtVMSlave is used to represent a node. It uses OVirtHypervisor
+ * (@see OVirtHypervisor) to get the current nodes available in the ovirt
+ * server and uses OVirtComputerLauncher to *really* start the vm, and
+ * run slave.jar
  *
  * @See <a href="http://javadoc.jenkins-ci.org/hudson/model/Slave.html">
  */
 public class OVirtVMSlave extends Slave {
 
+    /**
+     * We need to save most of these information so that we can retrieve them
+     * back later when we 'edit' a node.
+     *
+     * This is also the reason why we need getters for them
+     */
     private String hypervisorDescription;
     private String snapshotName;
     private String virtualMachineName;
     private ComputerLauncher delegateLauncher;
     private int waitSec;
 
+    private int retries;
+
+    /**
+     * The constructor for OVIrtVMSlave. Even though it has tons of parameters,
+     * it's Jenkins' responsibility to fill those in. This object is used to
+     * represent a node creating using the ovirt cloud.
+     *
+     * @param name name of the node
+     * @param nodeDescription node description
+     * @param remoteFS the filesystem used
+     * @param numExecutors how many executors to run with
+     * @param mode mode?
+     * @param labelString the labels associated with this node
+     * @param delegateLauncher the launcher used to launch that node
+     * @param retentionStrategy retention strategy
+     * @param hypervisorDescription the hypervisor description
+     * @param snapshotName the snapshot used
+     * @param waitSec how many seconds to wait before retrying
+     * @param retries how many retries to do
+     * @param virtualMachineName the name of the ovirt vm
+     * @param nodeProperties the node properties
+     * @throws Descriptor.FormException
+     * @throws IOException
+     */
     @DataBoundConstructor
-    public OVirtVMSlave(String name, String nodeDescription, String remoteFS, String numExecutors, Mode mode,
-                        String labelString, ComputerLauncher delegateLauncher, RetentionStrategy retentionStrategy,
-                        String hypervisorDescription, String snapshotName, int waitSec, String virtualMachineName,
+    public OVirtVMSlave(String name, String nodeDescription, String remoteFS,
+                        String numExecutors, Mode mode, String labelString,
+                        ComputerLauncher delegateLauncher,
+                        RetentionStrategy retentionStrategy,
+                        String hypervisorDescription, String snapshotName,
+                        int waitSec, int retries,
+                        String virtualMachineName,
                         List<? extends NodeProperty<?>> nodeProperties)
                 throws Descriptor.FormException, IOException {
         super(name, nodeDescription, remoteFS, numExecutors, mode, labelString,
-              new OVirtVMLauncher(delegateLauncher, hypervisorDescription, virtualMachineName, snapshotName, waitSec),
+              new OVirtVMLauncher(delegateLauncher, hypervisorDescription,
+                                  virtualMachineName, snapshotName,
+                                  waitSec, retries),
               retentionStrategy,
               nodeProperties);
 
@@ -57,8 +87,10 @@ public class OVirtVMSlave extends Slave {
         this.snapshotName = snapshotName;
         this.virtualMachineName = virtualMachineName;
         this.waitSec = waitSec;
+        this.retries = retries;
         this.delegateLauncher = delegateLauncher;
     }
+
 
     public String getHypervisorDescription() {
         return hypervisorDescription;
@@ -76,6 +108,10 @@ public class OVirtVMSlave extends Slave {
         return waitSec;
     }
 
+    public int getRetries() {
+        return retries;
+    }
+
     public ComputerLauncher getDelegateLauncher() {
         return delegateLauncher;
     }
@@ -90,8 +126,11 @@ public class OVirtVMSlave extends Slave {
     public static class OVirtVMSlaveListener extends ComputerListener {
 
         @Override
-        public void preLaunch(Computer c, TaskListener taskListener) throws IOException, InterruptedException {
-            /* We may be called on any slave type so check that we should be in here. */
+        public void preLaunch(Computer c, TaskListener taskListener)
+                                      throws IOException, InterruptedException {
+            /* We may be called on any slave type so check that we should
+             * be in here.
+             */
             if (!(c.getNode() instanceof OVirtVMSlave)) {
                 return;
             }
@@ -106,66 +145,87 @@ public class OVirtVMSlave extends Slave {
     @Extension
     public static final class SlaveDescriptorImpl extends SlaveDescriptor {
 
-
         public SlaveDescriptorImpl() {
             load(); // load the data from the disk into this object
         }
 
-        private Map<String, OVirtHypervisor> getDescHypervisor() {
-            Map<String, OVirtHypervisor> descHypervisor = new HashMap<String, OVirtHypervisor>();
-            for (Cloud cloud: Jenkins.getInstance().clouds) {
-                if (cloud instanceof OVirtHypervisor) {
-                    OVirtHypervisor temp = (OVirtHypervisor) cloud;
-                    descHypervisor.put(temp.getHypervisorDescription(), temp);
-                }
-            }
-            return descHypervisor;
-        }
-
+        /**
+         * Human readable name of this kind of configurable object.
+         * @return
+         */
         @Override
         public String getDisplayName() {
-            return "Slave VM computer running on a virtualization platform (via ovirt)";
+            return "Slave VM computer running on a virtualization platform " +
+                   "(via ovirt)";
         }
 
+        /**
+         * Can the administrator create this type of nodes from UI?
+         *
+         * @return true
+         */
         @Override
         public boolean isInstantiable() {
             return true;
         }
 
-        public FormValidation doCheckWaitSec(@QueryParameter("waitSec") String value) {
+        /**
+         * Method that is called when we create a new node. It will validate
+         * the waitSec entry in the UI
+         *
+         * @param value the waitSec value
+         * @return
+         */
+        public FormValidation doCheckWaitSec(@QueryParameter("waitSec")
+                                             String value) {
          	try {
                 int v = Integer.parseInt(value);
-
                 FormValidation result;
 
                 if (v < 0) {
                      result = FormValidation.error("Negative value..");
                 } else if (v == 0) {
-                    result = FormValidation.warning("You declared this virtual machine to be ready right away. " +
-                                                    "It probably needs a couple of seconds before it is " +
-                                                    "ready to process jobs!");
+                    result = FormValidation.warning(
+                       "You declared this virtual machine to be ready right " +
+                       "away. It probably needs a couple of seconds before it" +
+                       " is ready to process jobs!");
                 } else {
                     result = FormValidation.ok();
                 }
-
                 return result;
-
             } catch (NumberFormatException e) {
                 return FormValidation.error("Not a number..");
             }
         }
 
+        /**
+         * Fill in the hypervisor dropdown menu in the UI
+         *
+         * @return
+         */
         public ListBoxModel doFillHypervisorDescriptionItems() {
             ListBoxModel m = new ListBoxModel();
 
-            for(String key: getDescHypervisor().keySet()) {
+            for(String key: OVirtHypervisor.getAll().keySet()) {
                 m.add(key, key);
             }
-
             return m;
         }
 
-        public ListBoxModel doGetVMNames(@QueryParameter("hypervisor") String value) throws IOException, ServletException {
+        /**
+         * Get all vms from this hypervisor specified as a parameter to
+         * generate a dropdown menu
+         *
+         * @param value the hypervisor description
+         *
+         * @return
+         * @throws IOException
+         * @throws ServletException
+         */
+        public ListBoxModel doGetVMNames(@QueryParameter("hypervisor")
+                                         String value)
+                                      throws IOException, ServletException {
+
             ListBoxModel m = new ListBoxModel();
             List<String> vmNames = getVMNamesList(value);
             for (String vmName: vmNames) {
@@ -174,33 +234,56 @@ public class OVirtVMSlave extends Slave {
             return m;
         }
 
-        public List<String> getVMNamesList(String hypervisor) {
+        /**
+         * Get all vms from this hypervisor
+         *
+         * @param hypervisor
+         * @return
+         */
+        public List<String> getVMNamesList(final String hypervisor) {
             List<String> vmNames = new LinkedList<String>();
 
             if (hypervisor == null) {
                 return vmNames;
             }
-
-            OVirtHypervisor hype = getDescHypervisor().get(hypervisor);
+            OVirtHypervisor hype = OVirtHypervisor.getAll().get(hypervisor);
             for (String vmName: hype.getVMNames()) {
                 vmNames.add(vmName);
             }
-
             return vmNames;
         }
 
-        public ListBoxModel doGetSnapshotNames(@QueryParameter("vm") String vm,
-                                               @QueryParameter("hypervisor") String hypervisor) throws IOException, ServletException {
+        /**
+         * Get all the snapshots corresponding to this vm and hypervisor to
+         * generate a dropdown menu
+         *
+         * @param vm vm whose snapshots are to be found
+         * @param hypervisor vm belonging to this hypervisor
+         * @return
+         * @throws IOException
+         * @throws ServletException
+         */
+        public ListBoxModel
+        doGetSnapshotNames(@QueryParameter("vm") String vm,
+                           @QueryParameter("hypervisor") String hypervisor)
+                                        throws IOException, ServletException {
 
             ListBoxModel m = new ListBoxModel();
-
             for (String snapshot: getSnapshotNamesList(vm, hypervisor)) {
                 m.add(snapshot, snapshot);
             }
             return m;
         }
 
-        public List<String> getSnapshotNamesList(final String vm, final String hypervisor) {
+        /**
+         * Get all the snapshots corresponding to this vm and hypervisor
+         *
+         * @param vm vm whose snapshots are to be found
+         * @param hypervisor vm belonging to this hypervisor
+         * @return
+         */
+        public List<String> getSnapshotNamesList(final String vm,
+                                                 final String hypervisor) {
 
             List<String> snapshotNames = new LinkedList<String>();
 
@@ -211,7 +294,7 @@ public class OVirtVMSlave extends Slave {
                 return snapshotNames;
             }
 
-            OVirtHypervisor hype = getDescHypervisor().get(hypervisor);
+            OVirtHypervisor hype = OVirtHypervisor.getAll().get(hypervisor);
             VM vmi = hype.getVM(vm);
 
             try {

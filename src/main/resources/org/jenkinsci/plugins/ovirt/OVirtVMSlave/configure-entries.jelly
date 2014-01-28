@@ -63,8 +63,12 @@
         <f:textbox field="nodeDescription"/>
     </f:entry>
 
-    <f:entry title="${%Startup Idle (sec)}" field="waitSec">
-        <f:textbox default="60"/>
+    <f:entry title="${%Startup/Shutdown Idle (sec)}" field="waitSec">
+        <f:textbox default="20"/>
+    </f:entry>
+
+    <f:entry title="${%Time to retry Startup/Shutdown}" field="retries">
+        <f:textbox default="10"/>
     </f:entry>
 
     <f:entry title="${%# of executors}" field="numExecutors">

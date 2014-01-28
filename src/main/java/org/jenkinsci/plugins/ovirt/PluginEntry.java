@@ -23,7 +23,8 @@ import java.util.logging.Logger;
  */
 public class PluginEntry extends Plugin {
 
-    private static final java.util.logging.Logger LOGGER = Logger.getLogger(PluginEntry.class.getName());
+    private static final java.util.logging.Logger LOGGER =
+                                Logger.getLogger(PluginEntry.class.getName());
 
     @Override
     public void start() throws Exception {
@@ -33,16 +34,5 @@ public class PluginEntry extends Plugin {
     @Override
     public void stop() throws Exception {
         LOGGER.log(Level.FINE, "Stopping ovirt-slave plugin");
-    }
-
-    private Map<String, OVirtHypervisor> getDescHypervisor() {
-        Map<String, OVirtHypervisor> descHypervisor = new HashMap<String, OVirtHypervisor>();
-        for (Cloud cloud: Jenkins.getInstance().clouds) {
-            if (cloud instanceof OVirtHypervisor) {
-                OVirtHypervisor temp = (OVirtHypervisor) cloud;
-                descHypervisor.put(temp.getHypervisorDescription(), temp);
-            }
-        }
-        return descHypervisor;
     }
 }

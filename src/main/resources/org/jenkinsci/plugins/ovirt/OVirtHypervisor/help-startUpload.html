@@ -1,0 +1,11 @@
+<!-- is that even active? -->
+<div>
+    <p>Upload the trustore of the rhev instance.</p>
+    <p>
+        To create the trustore, use the instructions below.
+        <code>
+        curl -o rhevm.cer https://my.ovirt.engine.org/ca.crt
+        keytool -import -file rhevm.cer -keystore ovirt.keystore.jks
+        </code>
+    </p>
+</div>
