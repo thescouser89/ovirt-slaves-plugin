@@ -209,19 +209,8 @@ public class OVirtHypervisor extends Cloud {
                                   username,
                                   password,
                                   truststoreLocation);
-                    System.out.println("trustore" + truststoreLocation);
-                    System.out.println("trustore" + truststoreLocation);
-                    System.out.println("trustore" + truststoreLocation);
-                    System.out.println("trustore" + truststoreLocation);
-                    System.out.println("trustore" + truststoreLocation);
                 } else {
                     api = new Api(ovirtURL, username, password);
-                    System.out.println(" no trustore");
-                    System.out.println(" no trustore");
-                    System.out.println(" no trustore");
-                    System.out.println(" no trustore");
-                    System.out.println(" no trustore");
-                    System.out.println(" no trustore");
                 }
             }
             return api;
