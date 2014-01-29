@@ -42,6 +42,7 @@ public class OVirtHypervisor extends Cloud {
     private String clusterName;
     private String username;
     private String password;
+    private String truststoreLocation;
 
     private transient Api api;
     private transient Cluster cluster;
@@ -57,12 +58,14 @@ public class OVirtHypervisor extends Cloud {
                            final String ovirtURL,
                            final String clusterName,
                            final String username,
-                           final String password) {
+                           final String password,
+                           final String truststoreLocation) {
         super(name);
-        this.ovirtURL = ovirtURL;
-        this.clusterName = clusterName;
-        this.username = username;
-        this.password = password;
+        this.ovirtURL = ovirtURL.trim();
+        this.clusterName = clusterName.trim();
+        this.username = username.trim();
+        this.password = password.trim();
+        this.truststoreLocation = truststoreLocation.trim();
     }
 
     /**
@@ -139,6 +142,10 @@ public class OVirtHypervisor extends Cloud {
         return password;
     }
 
+    public String getTruststoreLocation() {
+        return truststoreLocation;
+    }
+
     /**
      * Returns true if this cloud is capable of provisioning new nodes for the
      * given label. Right now we can't create a new node from this plugin
@@ -170,6 +177,9 @@ public class OVirtHypervisor extends Cloud {
         return !clusterName.trim().equals("");
     }
 
+    private boolean isTruststoreSpecified() {
+        return !truststoreLocation.trim().equals("");
+    }
     /**
      * Return a list of vm names for this particular ovirt server
      *
@@ -194,7 +204,25 @@ public class OVirtHypervisor extends Cloud {
     public Api getAPI() {
         try {
             if(api == null) {
-                api = new Api(ovirtURL, username, password, "ovirt.trustore");
+                if (isTruststoreSpecified()) {
+                    api = new Api(ovirtURL,
+                                  username,
+                                  password,
+                                  truststoreLocation);
+                    System.out.println("trustore" + truststoreLocation);
+                    System.out.println("trustore" + truststoreLocation);
+                    System.out.println("trustore" + truststoreLocation);
+                    System.out.println("trustore" + truststoreLocation);
+                    System.out.println("trustore" + truststoreLocation);
+                } else {
+                    api = new Api(ovirtURL, username, password);
+                    System.out.println(" no trustore");
+                    System.out.println(" no trustore");
+                    System.out.println(" no trustore");
+                    System.out.println(" no trustore");
+                    System.out.println(" no trustore");
+                    System.out.println(" no trustore");
+                }
             }
             return api;
         } catch (Exception e) {
@@ -347,6 +375,8 @@ public class OVirtHypervisor extends Cloud {
          * @param rsp
          * @throws IOException
          * @throws ServletException
+         *
+         * TODO: where to save the file?
          */
         public void doUpload(StaplerRequest req, StaplerResponse rsp)
                                         throws IOException, ServletException {

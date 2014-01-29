@@ -25,7 +25,6 @@ import org.ovirt.engine.sdk.entities.Action;
 public class OVirtVMLauncher extends ComputerLauncher {
 
     private ComputerLauncher delegateLauncher;
-    private OVirtHypervisor hypervisor;
     private transient VMSnapshot snapshot;
 
     private String hypervisorDescription;
@@ -80,20 +79,6 @@ public class OVirtVMLauncher extends ComputerLauncher {
     }
 
     /**
-     * Memoize the hypervisor field by calling the
-     * OVirtHypervisor.find() method only if the hypervisor variable is not
-     * initialized
-     *
-     * @return the hypervisor object
-     */
-    private OVirtHypervisor getHypervisor() {
-        if (hypervisor == null) {
-            hypervisor = OVirtHypervisor.find(hypervisorDescription);
-        }
-        return hypervisor;
-    }
-
-    /**
      * Get the current vm status. It does so by continuously getting a new VM
      * object corresponding to 'virtualMachineName', and checking on its state.
      *
@@ -102,7 +87,10 @@ public class OVirtVMLauncher extends ComputerLauncher {
      * @return the vm status
      */
     private String getVMStatus() {
-        return getHypervisor().getVM(virtualMachineName).getStatus().getState();
+        return OVirtHypervisor.find(hypervisorDescription)
+                              .getVM(virtualMachineName)
+                              .getStatus()
+                              .getState();
     }
 
     /**
@@ -328,7 +316,8 @@ public class OVirtVMLauncher extends ComputerLauncher {
         OVirtVMSlave slave = (OVirtVMSlave) slaveComputer.getNode();
 
         printLog(taskListener, "Connecting to ovirt server...");
-        VM vm = getHypervisor().getVM(virtualMachineName);
+        VM vm = OVirtHypervisor.find(hypervisorDescription)
+                               .getVM(virtualMachineName);
 
         try {
             // only if snapshot is specified should we try to shut it down
