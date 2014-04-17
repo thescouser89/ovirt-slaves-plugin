@@ -17,5 +17,5 @@ mvn install
 ## Test the plugin
 To test the plugin in an isolated environment, you just have to run this command:
 ```
-mvn hpi-run
+mvn hpi:run
 ```
