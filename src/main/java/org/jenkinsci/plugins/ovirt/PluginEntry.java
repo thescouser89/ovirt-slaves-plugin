@@ -1,17 +1,6 @@
 package org.jenkinsci.plugins.ovirt;
 
 import hudson.Plugin;
-import hudson.slaves.Cloud;
-import hudson.util.ListBoxModel;
-import jenkins.model.Jenkins;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-
-import javax.servlet.ServletException;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -19,7 +8,7 @@ import java.util.logging.Logger;
  * PluginEntry is the entry point to provide plugin functionality.
  * One instance of this class will be created by Jenkins.
  *
- * @See <a href="http://javadoc.jenkins-ci.org/hudson/Plugin.html">
+ * @link <a href="http://javadoc.jenkins-ci.org/hudson/Plugin.html">
  */
 public class PluginEntry extends Plugin {
 

@@ -120,11 +120,12 @@ public class OVirtVMSlave extends Slave {
     /**
      * Receives notifications about status changes of Computers.
      *
-     * @See <a href="http://javadoc.jenkins-ci.org/hudson/slaves/ComputerListener.html">
+     * @link <a href="http://javadoc.jenkins-ci.org/hudson/slaves/ComputerListener.html">
      */
     @Extension
     public static class OVirtVMSlaveListener extends ComputerListener {
 
+        /** FIXME: this is doing nothing! */
         @Override
         public void preLaunch(Computer c, TaskListener taskListener)
                                       throws IOException, InterruptedException {
@@ -140,7 +141,7 @@ public class OVirtVMSlave extends Slave {
     /**
      * Class that is used as helper for the slave view
      *
-     * @See <a href="http://javadoc.jenkins-ci.org/hudson/model/Slave.SlaveDescriptor.html">
+     * @link <a href="http://javadoc.jenkins-ci.org/hudson/model/Slave.SlaveDescriptor.html">
      */
     @Extension
     public static final class SlaveDescriptorImpl extends SlaveDescriptor {
@@ -151,7 +152,7 @@ public class OVirtVMSlave extends Slave {
 
         /**
          * Human readable name of this kind of configurable object.
-         * @return
+         * @return string representation of the vm
          */
         @Override
         public String getDisplayName() {
@@ -174,7 +175,7 @@ public class OVirtVMSlave extends Slave {
          * the waitSec entry in the UI
          *
          * @param value the waitSec value
-         * @return
+         * @return FormValidation object that says if the validation passed
          */
         public FormValidation doCheckWaitSec(@QueryParameter("waitSec")
                                              String value) {
@@ -201,7 +202,7 @@ public class OVirtVMSlave extends Slave {
         /**
          * Fill in the hypervisor dropdown menu in the UI
          *
-         * @return
+         * @return the list of hypoervisors
          */
         public ListBoxModel doFillHypervisorDescriptionItems() {
             ListBoxModel m = new ListBoxModel();
@@ -218,7 +219,7 @@ public class OVirtVMSlave extends Slave {
          *
          * @param value the hypervisor description
          *
-         * @return
+         * @return the list of vm names
          * @throws IOException
          * @throws ServletException
          */
@@ -237,8 +238,8 @@ public class OVirtVMSlave extends Slave {
         /**
          * Get all vms from this hypervisor
          *
-         * @param hypervisor
-         * @return
+         * @param hypervisor the hypervisor selected
+         * @return list of vms
          */
         public List<String> getVMNamesList(final String hypervisor) {
             List<String> vmNames = new LinkedList<String>();
@@ -259,7 +260,7 @@ public class OVirtVMSlave extends Slave {
          *
          * @param vm vm whose snapshots are to be found
          * @param hypervisor vm belonging to this hypervisor
-         * @return
+         * @return list of snapshots for that vm
          * @throws IOException
          * @throws ServletException
          */
@@ -280,7 +281,7 @@ public class OVirtVMSlave extends Slave {
          *
          * @param vm vm whose snapshots are to be found
          * @param hypervisor vm belonging to this hypervisor
-         * @return
+         * @return list of snapshots for that vm
          */
         public List<String> getSnapshotNamesList(final String vm,
                                                  final String hypervisor) {
@@ -301,8 +302,8 @@ public class OVirtVMSlave extends Slave {
                 for (VMSnapshot snapshot: vmi.getSnapshots().list()) {
                     snapshotNames.add(snapshot.getDescription());
                 }
+                /** FIXME: empty catch name */
             } catch (Exception e) {}
-
             return snapshotNames;
         }
 

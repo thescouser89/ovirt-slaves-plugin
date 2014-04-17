@@ -150,7 +150,7 @@ public class OVirtHypervisor extends Cloud {
      * Returns true if this cloud is capable of provisioning new nodes for the
      * given label. Right now we can't create a new node from this plugin
      *
-     * @param label
+     * @param label the label used
      * @return false
      */
     @Override
@@ -199,7 +199,7 @@ public class OVirtHypervisor extends Cloud {
      * initialized yet.
      *
      * @return Api object for this hypervisor
-     * @return null if creation of Api object throws an exception
+     *         null if creation of Api object throws an exception
      */
     public Api getAPI() {
         try {
@@ -269,7 +269,7 @@ public class OVirtHypervisor extends Cloud {
      * Get the cluster object corresponding to the clusterName if clusterName
      * is specified. The cluster object will then be memoized.
      * @return null if clusterName is empty
-     * @return cluster object corresponding to clusterName
+     *         cluster object corresponding to clusterName
      * @throws Exception
      */
     public Cluster getCluster() throws Exception {
@@ -338,10 +338,10 @@ public class OVirtHypervisor extends Cloud {
          *
          * Code from the secret plugin
          *
-         * @See <a href='https://github.com/jenkinsci/secret-plugin/blob/master/src/main/java/hudson/plugins/secret/SecretBuildWrapper.java'>
+         * @link <a href='https://github.com/jenkinsci/secret-plugin/blob/master/src/main/java/hudson/plugins/secret/SecretBuildWrapper.java'>
          *
-         * @param req
-         * @param rsp
+         * @param req request
+         * @param rsp response
          * @throws IOException
          * @throws ServletException
          */
@@ -358,10 +358,10 @@ public class OVirtHypervisor extends Cloud {
          *
          * Code from the secret plugin
          *
-         * @See <a href='https://github.com/jenkinsci/secret-plugin/blob/master/src/main/java/hudson/plugins/secret/SecretBuildWrapper.java'>
+         * @link <a href='https://github.com/jenkinsci/secret-plugin/blob/master/src/main/java/hudson/plugins/secret/SecretBuildWrapper.java'>
          *
-         * @param req
-         * @param rsp
+         * @param req request
+         * @param rsp response
          * @throws IOException
          * @throws ServletException
          *
