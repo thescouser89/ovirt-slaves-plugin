@@ -4,7 +4,7 @@ ovirt-slaves-plugin
 Jenkins plugin to control VM slaves managed by ovirt/RHEV.
 
 
-## How does it works
+## How does it work
 `OVirtHypervisor` will be the link between Jenkins and the ovirt server to
 connect existing slave vms on the server to Jenkins. It needs to override the
 Cloud abstract class to achieve so.
