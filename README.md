@@ -21,3 +21,5 @@ command:
 ```
 mvn hpi:run
 ```
+
+To access this local instance of Jenkins, open http://localhost:8080/jenkins
