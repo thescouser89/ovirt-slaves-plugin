@@ -323,9 +323,10 @@ public class OVirtHypervisor extends Cloud {
         public FormValidation
         doTestConnection(@QueryParameter("ovirtURL") final String ovirtURL,
                          @QueryParameter("username") final String username,
-                         @QueryParameter("password") final String password) {
+                         @QueryParameter("password") final String password,
+                         @QueryParameter("truststoreLocation") final String truststore) {
             try {
-                new Api(ovirtURL, username, password, "ovirt.trustore").shutdown();
+                new Api(ovirtURL, username, password, truststore).shutdown();
                 return FormValidation.ok("Test succeeded!");
             } catch (Exception e) {
                 return FormValidation.error(e.getMessage());

@@ -38,5 +38,5 @@
     <f:password />
   </f:entry>
   <f:validateButton title="Test Connection" progress="Testing..."
-                    method="testConnection" with="ovirtURL,username,password" />
+                    method="testConnection" with="ovirtURL,username,password,truststoreLocation" />
 </j:jelly>
