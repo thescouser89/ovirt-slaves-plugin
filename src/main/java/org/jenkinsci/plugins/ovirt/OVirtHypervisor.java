@@ -35,7 +35,7 @@ import javax.servlet.ServletException;
  * Jenkins so that we can create new slaves by communicating with the ovirt
  * server and probing for the vms available there.
  *
- * @see <a href="http://javadoc.jenkins-ci.org/hudson/slaves/Cloud.html">
+ * @see <a href="http://javadoc.jenkins-ci.org/hudson/slaves/Cloud.html"></a>
  */
 public class OVirtHypervisor extends Cloud {
     private String ovirtURL;
@@ -74,8 +74,10 @@ public class OVirtHypervisor extends Cloud {
      *
      * If it is not found, a RuntimeException will be thrown
      *
+     * @param hypervisorDescription description
+     *
      * @return the hypervisor object found.
-     * @throws RuntimeException
+     * @throws RuntimeException Could not find our ovirt instance
      */
     public static OVirtHypervisor find(final String hypervisorDescription)
                                                       throws RuntimeException {
@@ -268,9 +270,10 @@ public class OVirtHypervisor extends Cloud {
     /**
      * Get the cluster object corresponding to the clusterName if clusterName
      * is specified. The cluster object will then be memoized.
+     *
      * @return null if clusterName is empty
      *         cluster object corresponding to clusterName
-     * @throws Exception
+     * @throws Exception some issue with the ovirt server communication
      */
     public Cluster getCluster() throws Exception {
         if (cluster == null && isClusterSpecified()) {
@@ -339,12 +342,12 @@ public class OVirtHypervisor extends Cloud {
          *
          * Code from the secret plugin
          *
-         * @link <a href='https://github.com/jenkinsci/secret-plugin/blob/master/src/main/java/hudson/plugins/secret/SecretBuildWrapper.java'>
+         * @see <a href='https://github.com/jenkinsci/secret-plugin/blob/master/src/main/java/hudson/plugins/secret/SecretBuildWrapper.java'></a>
          *
          * @param req request
          * @param rsp response
-         * @throws IOException
-         * @throws ServletException
+         * @throws IOException IOException
+         * @throws ServletException ServletException
          */
         public void doStartUpload(StaplerRequest req, StaplerResponse rsp)
                                         throws IOException, ServletException {
@@ -359,12 +362,12 @@ public class OVirtHypervisor extends Cloud {
          *
          * Code from the secret plugin
          *
-         * @link <a href='https://github.com/jenkinsci/secret-plugin/blob/master/src/main/java/hudson/plugins/secret/SecretBuildWrapper.java'>
+         * @see <a href='https://github.com/jenkinsci/secret-plugin/blob/master/src/main/java/hudson/plugins/secret/SecretBuildWrapper.java'></a>
          *
          * @param req request
          * @param rsp response
-         * @throws IOException
-         * @throws ServletException
+         * @throws IOException IOException
+         * @throws ServletException ServletException
          *
          * TODO: where to save the file?
          */
@@ -384,7 +387,7 @@ public class OVirtHypervisor extends Cloud {
          * Tell req that we were able to upload the trustore
          *
          * @param rsp the response object
-         * @throws IOException
+         * @throws IOException IOException
          */
         private void confirmUpload(final StaplerResponse rsp)
                                                             throws IOException {
@@ -396,7 +399,7 @@ public class OVirtHypervisor extends Cloud {
          * Helper method to save data into a file named 'filename'
          * @param data: the data to be written to filename
          * @param filename: the filename to write to
-         * @throws IOException
+         * @throws IOException IOException
          */
         private void saveFile(final byte[] data, final String filename)
                                                             throws IOException {

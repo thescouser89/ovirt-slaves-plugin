@@ -20,7 +20,7 @@ import org.ovirt.engine.sdk.entities.Action;
  * So when the user press 'Launch Agent' or a job is run, this class will be
  * used.
  *
- * @link <a href='http://javadoc.jenkins-ci.org/hudson/slaves/ComputerLauncher.html'/>
+ * @see <a href='http://javadoc.jenkins-ci.org/hudson/slaves/ComputerLauncher.html'></a>
  */
 public class OVirtVMLauncher extends ComputerLauncher {
 

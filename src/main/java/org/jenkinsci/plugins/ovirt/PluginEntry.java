@@ -8,7 +8,7 @@ import java.util.logging.Logger;
  * PluginEntry is the entry point to provide plugin functionality.
  * One instance of this class will be created by Jenkins.
  *
- * @link <a href="http://javadoc.jenkins-ci.org/hudson/Plugin.html">
+ * @see <a href="http://javadoc.jenkins-ci.org/hudson/Plugin.html"></a>
  */
 public class PluginEntry extends Plugin {
 

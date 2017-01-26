@@ -26,7 +26,7 @@ import java.util.List;
  * server and uses OVirtComputerLauncher to *really* start the vm, and
  * run slave.jar
  *
- * @See <a href="http://javadoc.jenkins-ci.org/hudson/model/Slave.html">
+ * @see <a href="http://javadoc.jenkins-ci.org/hudson/model/Slave.html"></a>
  */
 public class OVirtVMSlave extends Slave {
 
@@ -63,8 +63,9 @@ public class OVirtVMSlave extends Slave {
      * @param retries how many retries to do
      * @param virtualMachineName the name of the ovirt vm
      * @param nodeProperties the node properties
-     * @throws Descriptor.FormException
-     * @throws IOException
+     *
+     * @throws Descriptor.FormException FormException
+     * @throws IOException IOException
      */
     @DataBoundConstructor
     public OVirtVMSlave(String name, String nodeDescription, String remoteFS,
@@ -120,7 +121,7 @@ public class OVirtVMSlave extends Slave {
     /**
      * Receives notifications about status changes of Computers.
      *
-     * @link <a href="http://javadoc.jenkins-ci.org/hudson/slaves/ComputerListener.html">
+     * @see <a href="http://javadoc.jenkins-ci.org/hudson/slaves/ComputerListener.html"></a>
      */
     @Extension
     public static class OVirtVMSlaveListener extends ComputerListener {
@@ -141,7 +142,7 @@ public class OVirtVMSlave extends Slave {
     /**
      * Class that is used as helper for the slave view
      *
-     * @link <a href="http://javadoc.jenkins-ci.org/hudson/model/Slave.SlaveDescriptor.html">
+     * @see <a href="http://javadoc.jenkins-ci.org/hudson/model/Slave.SlaveDescriptor.html"></a>
      */
     @Extension
     public static final class SlaveDescriptorImpl extends SlaveDescriptor {
@@ -220,8 +221,9 @@ public class OVirtVMSlave extends Slave {
          * @param value the hypervisor description
          *
          * @return the list of vm names
-         * @throws IOException
-         * @throws ServletException
+         *
+         * @throws IOException IOException
+         * @throws ServletException ServletException
          */
         public ListBoxModel doGetVMNames(@QueryParameter("hypervisor")
                                          String value)
@@ -261,8 +263,9 @@ public class OVirtVMSlave extends Slave {
          * @param vm vm whose snapshots are to be found
          * @param hypervisor vm belonging to this hypervisor
          * @return list of snapshots for that vm
-         * @throws IOException
-         * @throws ServletException
+         *
+         * @throws IOException IOException
+         * @throws ServletException ServletException
          */
         public ListBoxModel
         doGetSnapshotNames(@QueryParameter("vm") String vm,
