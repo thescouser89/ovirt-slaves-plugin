@@ -19,18 +19,6 @@
     <f:textbox />
   </f:entry>
 
-  <!-- Disabled for now
-  <f:entry field="_" title="ovirt Trustore">
-    <j:set var="url" value="${descriptor.getDescriptorFullUrl()}/startUpload"/>
-        <iframe src="${url}" frameborder="0" width="100%">
-            <a href="${url}" target="_blank">Upload trustore</a>
-        </iframe>
-    </f:entry>
-    -->
-  <f:entry title="Truststore Location" field="truststoreLocation">
-    <f:textbox />
-  </f:entry>
-
   <f:entry title="Username" field="username">
     <f:textbox />
   </f:entry>
@@ -38,5 +26,5 @@
     <f:password />
   </f:entry>
   <f:validateButton title="Test Connection" progress="Testing..."
-                    method="testConnection" with="ovirtURL,username,password,truststoreLocation" />
+                    method="testConnection" with="ovirtURL,username,password" />
 </j:jelly>

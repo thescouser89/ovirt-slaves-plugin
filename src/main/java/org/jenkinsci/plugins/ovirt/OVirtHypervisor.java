@@ -42,13 +42,12 @@ public class OVirtHypervisor extends Cloud {
     private String clusterName;
     private String username;
     private String password;
-    private String truststoreLocation;
 
     private transient Api api;
     private transient Cluster cluster;
+
     /**
-     *
-     * @param name Name of the OVirt Server
+     * @param name     Name of the OVirt Server
      * @param ovirtURL The ovirt server's API url
      * @param username The username of the user to login in the ovirt server
      * @param password The password of the user to login in the ovirt server
@@ -58,34 +57,31 @@ public class OVirtHypervisor extends Cloud {
                            final String ovirtURL,
                            final String clusterName,
                            final String username,
-                           final String password,
-                           final String truststoreLocation) {
+                           final String password) {
         super(name);
         this.ovirtURL = ovirtURL.trim();
         this.clusterName = clusterName.trim();
         this.username = username.trim();
         this.password = password.trim();
-        this.truststoreLocation = truststoreLocation.trim();
     }
 
     /**
      * Go through all the clouds Objects known to Jenkins and find the
      * OVirtHypervisor object belonging to this hypervisor description.
-     *
+     * <p>
      * If it is not found, a RuntimeException will be thrown
      *
      * @param hypervisorDescription description
-     *
      * @return the hypervisor object found.
      * @throws RuntimeException Could not find our ovirt instance
      */
     public static OVirtHypervisor find(final String hypervisorDescription)
-                                                      throws RuntimeException {
+            throws RuntimeException {
         if (hypervisorDescription == null) {
             return null;
         }
 
-        for (Cloud cloud: Jenkins.getInstance().clouds) {
+        for (Cloud cloud : Jenkins.getInstance().clouds) {
             if (cloud instanceof OVirtHypervisor) {
                 OVirtHypervisor temp = (OVirtHypervisor) cloud;
 
@@ -108,9 +104,9 @@ public class OVirtHypervisor extends Cloud {
      */
     public static Map<String, OVirtHypervisor> getAll() {
         Map<String, OVirtHypervisor> descHypervisor =
-                                        new HashMap<String, OVirtHypervisor>();
+                new HashMap<String, OVirtHypervisor>();
 
-        for (Cloud cloud: Jenkins.getInstance().clouds) {
+        for (Cloud cloud : Jenkins.getInstance().clouds) {
             if (cloud instanceof OVirtHypervisor) {
                 OVirtHypervisor temp = (OVirtHypervisor) cloud;
                 descHypervisor.put(temp.getHypervisorDescription(), temp);
@@ -144,10 +140,6 @@ public class OVirtHypervisor extends Cloud {
         return password;
     }
 
-    public String getTruststoreLocation() {
-        return truststoreLocation;
-    }
-
     /**
      * Returns true if this cloud is capable of provisioning new nodes for the
      * given label. Right now we can't create a new node from this plugin
@@ -165,7 +157,7 @@ public class OVirtHypervisor extends Cloud {
      * this feature.
      */
     @Override
-    public Collection<PlannedNode> provision (Label label, int excessWorkload) {
+    public Collection<PlannedNode> provision(Label label, int excessWorkload) {
         throw new UnsupportedOperationException("Not supported yet");
     }
 
@@ -179,9 +171,6 @@ public class OVirtHypervisor extends Cloud {
         return !clusterName.trim().equals("");
     }
 
-    private boolean isTruststoreSpecified() {
-        return !truststoreLocation.trim().equals("");
-    }
     /**
      * Return a list of vm names for this particular ovirt server
      *
@@ -190,7 +179,7 @@ public class OVirtHypervisor extends Cloud {
     public List<String> getVMNames() {
         List<String> vmNames = new ArrayList<String>();
 
-        for(VM vm: getVMs()) {
+        for (VM vm : getVMs()) {
             vmNames.add(vm.getName());
         }
         return vmNames;
@@ -201,19 +190,16 @@ public class OVirtHypervisor extends Cloud {
      * initialized yet.
      *
      * @return Api object for this hypervisor
-     *         null if creation of Api object throws an exception
+     * null if creation of Api object throws an exception
      */
     public Api getAPI() {
         try {
-            if(api == null) {
-                if (isTruststoreSpecified()) {
-                    api = new Api(ovirtURL,
-                                  username,
-                                  password,
-                                  truststoreLocation);
-                } else {
-                    api = new Api(ovirtURL, username, password);
-                }
+            if (api == null) {
+                api = new Api(ovirtURL,
+                        username,
+                        password,
+                        true,
+                        true);
             }
             return api;
         } catch (Exception e) {
@@ -229,7 +215,7 @@ public class OVirtHypervisor extends Cloud {
      * @return the VM object
      */
     public VM getVM(String vm) {
-        for(VM vmi: getVMs()) {
+        for (VM vmi : getVMs()) {
             if (vmi.getName().equals(vm)) {
                 return vmi;
             }
@@ -250,10 +236,10 @@ public class OVirtHypervisor extends Cloud {
             List<VM> vmsInCluster = new ArrayList<VM>();
             // if clusterName specified, search for vms in that cluster
             if (isClusterSpecified()) {
-                for (VM vm: vms) {
+                for (VM vm : vms) {
                     if (vm.getCluster()
-                           .getHref()
-                           .equals(getCluster().getHref())) {
+                            .getHref()
+                            .equals(getCluster().getHref())) {
                         vmsInCluster.add(vm);
                     }
                 }
@@ -272,7 +258,7 @@ public class OVirtHypervisor extends Cloud {
      * is specified. The cluster object will then be memoized.
      *
      * @return null if clusterName is empty
-     *         cluster object corresponding to clusterName
+     * cluster object corresponding to clusterName
      * @throws Exception some issue with the ovirt server communication
      */
     public Cluster getCluster() throws Exception {
@@ -302,9 +288,9 @@ public class OVirtHypervisor extends Cloud {
 
             String regex = "[._a-z0-9]+";
             Matcher m = Pattern.compile(regex, Pattern.CASE_INSENSITIVE)
-                               .matcher(name);
+                    .matcher(name);
 
-            if(m.matches()) {
+            if (m.matches()) {
                 return FormValidation.ok();
             }
             return FormValidation.error("Cloud name allows only: " + regex);
@@ -319,17 +305,15 @@ public class OVirtHypervisor extends Cloud {
          * @param ovirtURL The ovirt server's API url
          * @param username The username of the user to login in the ovirt server
          * @param password The password of the user to login in the ovirt server
-         *
          * @return FormValidation object that represent whether the test was
-         *         successful or not
+         * successful or not
          */
         public FormValidation
         doTestConnection(@QueryParameter("ovirtURL") final String ovirtURL,
                          @QueryParameter("username") final String username,
-                         @QueryParameter("password") final String password,
-                         @QueryParameter("truststoreLocation") final String truststore) {
+                         @QueryParameter("password") final String password) {
             try {
-                new Api(ovirtURL, username, password, truststore).shutdown();
+                new Api(ovirtURL, username, password, true, true).shutdown();
                 return FormValidation.ok("Test succeeded!");
             } catch (Exception e) {
                 return FormValidation.error(e.getMessage());
@@ -339,76 +323,20 @@ public class OVirtHypervisor extends Cloud {
         /**
          * This file will only render the startUpload.jelly file when the user
          * is creating a new cloud
-         *
+         * <p>
          * Code from the secret plugin
-         *
-         * @see <a href='https://github.com/jenkinsci/secret-plugin/blob/master/src/main/java/hudson/plugins/secret/SecretBuildWrapper.java'></a>
          *
          * @param req request
          * @param rsp response
-         * @throws IOException IOException
+         * @throws IOException      IOException
          * @throws ServletException ServletException
+         * @see <a href='https://github.com/jenkinsci/secret-plugin/blob/master/src/main/java/hudson/plugins/secret/SecretBuildWrapper.java'></a>
          */
         public void doStartUpload(StaplerRequest req, StaplerResponse rsp)
-                                        throws IOException, ServletException {
+                throws IOException, ServletException {
             rsp.setContentType("text/html");
             req.getView(OVirtHypervisor.class, "startUpload.jelly")
-               .forward(req, rsp);
-        }
-
-        /**
-         * This code will be called when the user presses the 'Upload' button
-         * while configuring a new cloud
-         *
-         * Code from the secret plugin
-         *
-         * @see <a href='https://github.com/jenkinsci/secret-plugin/blob/master/src/main/java/hudson/plugins/secret/SecretBuildWrapper.java'></a>
-         *
-         * @param req request
-         * @param rsp response
-         * @throws IOException IOException
-         * @throws ServletException ServletException
-         *
-         * TODO: where to save the file?
-         */
-        public void doUpload(StaplerRequest req, StaplerResponse rsp)
-                                        throws IOException, ServletException {
-            FileItem file = req.getFileItem("trustore.file");
-
-            if (file == null) {
-                throw new ServletException("No file uploaded");
-            }
-
-            saveFile(file.get(), "ovirt.trustore");
-            confirmUpload(rsp);
-        }
-
-        /**
-         * Tell req that we were able to upload the trustore
-         *
-         * @param rsp the response object
-         * @throws IOException IOException
-         */
-        private void confirmUpload(final StaplerResponse rsp)
-                                                            throws IOException {
-            rsp.setContentType("text/html");
-            rsp.getWriter().println("Uploaded trustore");
-        }
-
-        /**
-         * Helper method to save data into a file named 'filename'
-         * @param data: the data to be written to filename
-         * @param filename: the filename to write to
-         * @throws IOException IOException
-         */
-        private void saveFile(final byte[] data, final String filename)
-                                                            throws IOException {
-            OutputStream os = new FileOutputStream(new File(filename));
-            try {
-                os.write(data);
-            } finally {
-                os.close();
-            }
+                    .forward(req, rsp);
         }
     }
 }
