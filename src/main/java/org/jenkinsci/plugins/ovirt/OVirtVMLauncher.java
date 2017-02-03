@@ -327,6 +327,10 @@ public class OVirtVMLauncher extends ComputerLauncher {
                 revertSnapshot(vm, slave.getSnapshotName(), taskListener);
             }
             putVMUp(vm, taskListener);
+
+            // Add sleep
+            // modify delegateLauncher if it is ssh slaves and modify hosts
+
             delegateLauncher.launch(slaveComputer, taskListener);
         } catch (Exception e) {
             handleLaunchFailure(e, taskListener);
@@ -335,7 +339,7 @@ public class OVirtVMLauncher extends ComputerLauncher {
 
     /**
      * Put the exception in the launch method to the ovirt server log and
-     * throw an InterruptedException error about this faulure.
+     * throw an InterruptedException error about this failure.
      *
      * @param e: Exception to wrap around an InterruptedException
      * @param taskListener: listener object
