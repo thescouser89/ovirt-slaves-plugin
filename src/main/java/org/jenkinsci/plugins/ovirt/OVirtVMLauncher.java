@@ -129,7 +129,12 @@ public class OVirtVMLauncher extends ComputerLauncher {
      * @return true if the vm is up
      */
     private boolean isVMUp() {
+
         return getVMStatus().equalsIgnoreCase("up");
+    }
+
+    private boolean isVMImageLocked() {
+        return getVMStatus().equalsIgnoreCase("image_locked");
     }
 
     /**
@@ -325,15 +330,24 @@ public class OVirtVMLauncher extends ComputerLauncher {
             if (isSnapshotSpecified()) {
                 putVMDown(vm, taskListener);
                 revertSnapshot(vm, slave.getSnapshotName(), taskListener);
+                waitTillSnapshotUnlocked(taskListener);
             }
             putVMUp(vm, taskListener);
-
-            // Add sleep
-            // modify delegateLauncher if it is ssh slaves and modify hosts
 
             delegateLauncher.launch(slaveComputer, taskListener);
         } catch (Exception e) {
             handleLaunchFailure(e, taskListener);
+        }
+    }
+
+    private void waitTillSnapshotUnlocked(TaskListener taskListener) throws InterruptedException {
+        while(true) {
+            if (isVMImageLocked()) {
+               printLog(taskListener, "VM is image locked. Waiting till it's really down...");
+               Thread.sleep(WAITING_TIME_MILLISECS);
+            } else {
+                break;
+            }
         }
     }
 

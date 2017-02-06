@@ -198,7 +198,6 @@ public class OVirtHypervisor extends Cloud {
                 api = new Api(ovirtURL,
                         username,
                         password,
-                        true,
                         true);
             }
             return api;
