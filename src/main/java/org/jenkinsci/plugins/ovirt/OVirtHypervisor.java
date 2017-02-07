@@ -4,10 +4,7 @@ import hudson.slaves.Cloud;
 
 import hudson.model.Label;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.*;
 
 import hudson.Extension;
@@ -19,16 +16,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import jenkins.model.Jenkins;
-import org.apache.commons.fileupload.FileItem;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
 import org.ovirt.engine.sdk.Api;
 import org.ovirt.engine.sdk.decorators.Cluster;
 import org.ovirt.engine.sdk.decorators.VM;
-
-import javax.servlet.ServletException;
 
 /**
  * OVirtHypervisor is used to provide a different communication model for
@@ -317,25 +309,6 @@ public class OVirtHypervisor extends Cloud {
             } catch (Exception e) {
                 return FormValidation.error(e.getMessage());
             }
-        }
-
-        /**
-         * This file will only render the startUpload.jelly file when the user
-         * is creating a new cloud
-         * <p>
-         * Code from the secret plugin
-         *
-         * @param req request
-         * @param rsp response
-         * @throws IOException      IOException
-         * @throws ServletException ServletException
-         * @see <a href='https://github.com/jenkinsci/secret-plugin/blob/master/src/main/java/hudson/plugins/secret/SecretBuildWrapper.java'></a>
-         */
-        public void doStartUpload(StaplerRequest req, StaplerResponse rsp)
-                throws IOException, ServletException {
-            rsp.setContentType("text/html");
-            req.getView(OVirtHypervisor.class, "startUpload.jelly")
-                    .forward(req, rsp);
         }
     }
 }

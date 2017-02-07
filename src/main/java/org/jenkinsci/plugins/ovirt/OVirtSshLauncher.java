@@ -68,7 +68,7 @@ public class OVirtSshLauncher extends ComputerLauncher {
     private String password;
 
     // TODO: Don't hardcode these values
-    private int launchTimeout = 10000000;
+    private int launchTimeout = 300000;
     private int maxRetries = 5;
     private int retryWaitTime = 30;
 
@@ -103,11 +103,23 @@ public class OVirtSshLauncher extends ComputerLauncher {
         String ip = null;
 
         VM vm = OVirtHypervisor.find(hypervisor).getVM(vmName);
-        List<IP> ips = vm.getGuestInfo().getIps().getIPs();
+        for (int i = 0; i < maxRetries; i++) {
+            try {
+                List<IP> ips = vm.getGuestInfo().getIps().getIPs();
 
-        if (ips.size() >= 1) {
-            // use first IP to connect via ssh
-            ip = ips.get(0).getAddress();
+                if (ips.size() >= 1) {
+                    // use first IP to connect via ssh
+                    ip = ips.get(0).getAddress();
+                    taskListener.getLogger().println("IP of VM Obtained! " + ip);
+                    break;
+                }
+            } catch (NullPointerException e) {
+                taskListener.error("Couldn't get IP address of VM.. retrying in " + retryWaitTime + " s");
+                Thread.sleep(TimeUnit.SECONDS.toMillis(retryWaitTime));
+            }
+        }
+        if (ip == null) {
+            throw new InterruptedException("Couldn't find IP address of VM. Abandoning...");
         }
         connection = new Connection(ip, 22);
 

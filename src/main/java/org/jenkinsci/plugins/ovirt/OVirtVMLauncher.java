@@ -257,18 +257,20 @@ public class OVirtVMLauncher extends ComputerLauncher {
             return null;
         }
 
-        if(snapshot == null) {
+        if (snapshot != null) {
+            return snapshot;
+        } else {
             for (VMSnapshot snap: vm.getSnapshots().list()) {
                 if (snap.getDescription().equals(snapshotName)) {
                     snapshot = snap;
                     return snapshot;
                 }
             }
+            // if we reached here, then the snapshotName is not bound to that
+            // particular vm
+            throw new RuntimeException("No snapshot '" + snapshotName + "' " +
+                    "for vm '" + vm.getName() + "' found");
         }
-        // if we reached here, then the snapshotName is not bound to that
-        // particular vm
-        throw new RuntimeException("No snapshot '" + snapshotName + "' " +
-                "for vm '" + vm.getName() + "' found");
     }
 
     /**
