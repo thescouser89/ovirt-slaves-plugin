@@ -102,9 +102,9 @@ public class OVirtSshLauncher extends ComputerLauncher {
 
         String ip = null;
 
-        VM vm = OVirtHypervisor.find(hypervisor).getVM(vmName);
         for (int i = 0; i < maxRetries; i++) {
             try {
+                VM vm = OVirtHypervisor.find(hypervisor).getVM(vmName);
                 List<IP> ips = vm.getGuestInfo().getIps().getIPs();
 
                 if (ips.size() >= 1) {
