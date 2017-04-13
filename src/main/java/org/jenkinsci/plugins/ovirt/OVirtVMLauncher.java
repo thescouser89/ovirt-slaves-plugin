@@ -25,7 +25,6 @@ import org.ovirt.engine.sdk.entities.Action;
 public class OVirtVMLauncher extends ComputerLauncher {
 
     private ComputerLauncher delegateLauncher;
-    private transient VMSnapshot snapshot;
 
     private String hypervisorDescription;
     private String virtualMachineName;
@@ -251,26 +250,33 @@ public class OVirtVMLauncher extends ComputerLauncher {
 
     }
 
+    /**
+     * Quick note: Don't try to cache the snapshot object. There are cases
+     * where I'll cache the snapshot object based on the name, but the snapshot
+     * on Ovirt will get deleted, and another snapshot with the same name will
+     * be created. In this scenario, the cached snapshot object becomes invalid
+     *
+     * Instead, just always ask Ovirt for the latest snapshot object
+     * @param vm
+     * @param snapshotName
+     * @return
+     * @throws Exception
+     */
     private VMSnapshot getSnapshot(VM vm, String snapshotName)
                                                             throws Exception {
         if (!isSnapshotSpecified()) {
             return null;
         }
 
-        if (snapshot != null) {
-            return snapshot;
-        } else {
-            for (VMSnapshot snap: vm.getSnapshots().list()) {
-                if (snap.getDescription().equals(snapshotName)) {
-                    snapshot = snap;
-                    return snapshot;
-                }
+        for (VMSnapshot snap: vm.getSnapshots().list()) {
+            if (snap.getDescription().equals(snapshotName)) {
+                return snap;
             }
-            // if we reached here, then the snapshotName is not bound to that
-            // particular vm
-            throw new RuntimeException("No snapshot '" + snapshotName + "' " +
-                    "for vm '" + vm.getName() + "' found");
         }
+        // if we reached here, then the snapshotName is not bound to that
+        // particular vm
+        throw new RuntimeException("No snapshot '" + snapshotName + "' " +
+                "for vm '" + vm.getName() + "' found");
     }
 
     /**
@@ -291,14 +297,14 @@ public class OVirtVMLauncher extends ComputerLauncher {
                                 TaskListener taskListener) throws Exception {
 
         if (!isSnapshotSpecified()) {
-            throw new Exception("No snapshot sepcified!");
+            throw new Exception("No snapshot specified!");
         }
 
         VMSnapshot snapshot = getSnapshot(vm, snapshotName);
 
         // no snapshot to revert to
         if (snapshot == null) {
-            throw new Exception("No snapshot sepcified!");
+            throw new Exception("No snapshot specified!");
         }
 
         Action actionParams = new Action();
