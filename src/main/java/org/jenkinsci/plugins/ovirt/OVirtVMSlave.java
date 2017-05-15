@@ -36,6 +36,7 @@ public class OVirtVMSlave extends Slave {
      *
      * This is also the reason why we need getters for them
      */
+    static final long serialVersionUID = 1L;
     private String hypervisorDescription;
     private String snapshotName;
     private String virtualMachineName;
