@@ -25,8 +25,6 @@ package org.jenkinsci.plugins.ovirt;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.framework.io.IOException2;
-import org.ovirt.engine.sdk.decorators.VM;
-import org.ovirt.engine.sdk.entities.IP;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -56,6 +54,8 @@ import hudson.slaves.ComputerLauncher;
 import hudson.slaves.SlaveComputer;
 import hudson.util.NamingThreadFactory;
 import hudson.util.NullStream;
+import org.ovirt.engine.sdk4.types.Nic;
+import org.ovirt.engine.sdk4.types.Vm;
 
 /**
  * Part of code taken from ssh slaves plugin
@@ -104,12 +104,12 @@ public class OVirtSshLauncher extends ComputerLauncher {
 
         for (int i = 0; i < maxRetries; i++) {
             try {
-                VM vm = OVirtHypervisor.find(hypervisor).getVM(vmName);
-                List<IP> ips = vm.getGuestInfo().getIps().getIPs();
+                Vm vm = OVirtHypervisor.find(hypervisor).getVM(vmName);
+                List<Nic> nics = vm.nics();
 
-                if (ips.size() >= 1) {
+                if (nics.size() >= 1) {
                     // use first IP to connect via ssh
-                    ip = ips.get(0).getAddress();
+                    ip = nics.get(0).network().ip().address();
                     taskListener.getLogger().println("IP of VM Obtained! " + ip);
                     break;
                 }

@@ -12,8 +12,8 @@ import hudson.slaves.ComputerLauncher;
 import hudson.slaves.RetentionStrategy;
 import hudson.util.ListBoxModel;
 import org.kohsuke.stapler.QueryParameter;
-import org.ovirt.engine.sdk.decorators.VM;
-import org.ovirt.engine.sdk.decorators.VMSnapshot;
+import org.ovirt.engine.sdk4.types.Snapshot;
+import org.ovirt.engine.sdk4.types.Vm;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
@@ -300,11 +300,11 @@ public class OVirtVMSlave extends Slave {
             }
 
             OVirtHypervisor hype = OVirtHypervisor.getAll().get(hypervisor);
-            VM vmi = hype.getVM(vm);
+            Vm vmi = hype.getVM(vm);
 
             try {
-                for (VMSnapshot snapshot: vmi.getSnapshots().list()) {
-                    snapshotNames.add(snapshot.getDescription());
+                for (Snapshot snapshot: vmi.snapshots()) {
+                    snapshotNames.add(snapshot.description());
                 }
                 /** FIXME: empty catch name */
             } catch (Exception e) {}
