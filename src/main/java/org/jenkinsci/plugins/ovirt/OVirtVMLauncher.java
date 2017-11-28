@@ -398,6 +398,15 @@ public class OVirtVMLauncher extends ComputerLauncher {
     @Override
     public synchronized void afterDisconnect(SlaveComputer computer,
                                              TaskListener listener) {
+        VM vm = OVirtHypervisor.find(hypervisorDescription)
+                .getVM(virtualMachineName);
+        try {
+            printLog(listener, "Shutting down...");
+            shutdownVM(vm);
+        } catch(Exception e) {
+            printLog(listener, "Error while shutting down VM");
+            printLog(listener, e.getMessage());
+        }
         delegateLauncher.afterDisconnect(computer, listener);
     }
 }
